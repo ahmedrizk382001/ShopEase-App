@@ -83,11 +83,38 @@ Widget buildFavoriteItem(BuildContext context, FavoritesDataModel model) =>
               Stack(
                 alignment: Alignment.topLeft,
                 children: [
-                  Image(
-                    image: NetworkImage(model.products.image),
+                  Image.network(
+                    model.products.image,
                     width: 150,
                     height: 150,
                     fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) {
+                        return child;
+                      } else {
+                        return SizedBox(
+                          height: 150,
+                          width: 150,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: defaultColor,
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      (loadingProgress.expectedTotalBytes ?? 1)
+                                  : null,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Icon(
+                          Icons.error,
+                          color: Colors.red,
+                        ),
+                      );
+                    },
                   ),
                   if (model.products.discount != 0)
                     Container(
@@ -151,17 +178,18 @@ Widget buildFavoriteItem(BuildContext context, FavoritesDataModel model) =>
                             ],
                           ),
                           IconButton(
-                              onPressed: () {
-                                ShopCubit.get(context)
-                                    .changeFavorites(model.products.id);
-                                FavoritesCubit.get(context).getFavorites();
-                              },
-                              icon: Icon(
-                                Icons.favorite,
-                                color: defaultColor,
-                              ))
+                            onPressed: () {
+                              ShopCubit.get(context)
+                                  .changeFavorites(model.products.id);
+                              FavoritesCubit.get(context).getFavorites();
+                            },
+                            icon: Icon(
+                              Icons.favorite,
+                              color: defaultColor,
+                            ),
+                          ),
                         ],
-                      )
+                      ),
                     ],
                   ),
                 ),

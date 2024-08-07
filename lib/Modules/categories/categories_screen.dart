@@ -136,115 +136,114 @@ Widget buildCategoryItem(BuildContext context, CategoriesDataModel model) =>
       ],
     );
 
-Widget buildCategoryProductItem(
-        BuildContext context, ProductsDataModel model) =>
-    InkWell(
-      onTap: () {},
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            alignment: Alignment.topLeft,
-            children: [
-              Image(
-                image: NetworkImage(model.image),
-                width: 150,
-                height: 150,
-              ),
-              if (model.discount != 0)
-                Container(
-                  padding: const EdgeInsets.only(left: 10, right: 10),
-                  color: Colors.red,
-                  child: const Text(
-                    "Discount",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 13),
-                  ),
-                ),
-            ],
-          ),
-          Expanded(
-            child: SizedBox(
+Widget buildCategoryProductItem(BuildContext context, ProductsDataModel model) {
+  return InkWell(
+    onTap: () {},
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Stack(
+          alignment: Alignment.topLeft,
+          children: [
+            Image.network(
+              model.image,
+              width: 150,
               height: 150,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    model.name,
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 20,
-                    ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            "${model.price.round()} L.E",
-                            style: TextStyle(
-                              color: defaultColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          if (model.discount != 0)
-                            Text(
-                              "${model.oldPrice.round()} L.E",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                                decoration: TextDecoration.lineThrough,
-                                decorationColor: defaultColor,
-                                decorationThickness: 2,
-                              ),
-                            ),
-                        ],
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) {
+                  return child;
+                } else {
+                  return SizedBox(
+                    height: 150,
+                    width: 150,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: defaultColor,
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                (loadingProgress.expectedTotalBytes ?? 1)
+                            : null,
                       ),
-                    ],
-                  )
-                ],
+                    ),
+                  );
+                }
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(
+                  child: Icon(
+                    Icons.error,
+                    color: Colors.red,
+                  ),
+                );
+              },
+            ),
+            if (model.discount != 0)
+              Container(
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                color: Colors.red,
+                child: const Text(
+                  "Discount",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white, fontSize: 13),
+                ),
               ),
+          ],
+        ),
+        Expanded(
+          child: SizedBox(
+            height: 150,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  model.name,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          "${model.price.round()} L.E",
+                          style: TextStyle(
+                            color: defaultColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        if (model.discount != 0)
+                          Text(
+                            "${model.oldPrice.round()} L.E",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              decoration: TextDecoration.lineThrough,
+                              decorationColor: defaultColor,
+                              decorationThickness: 2,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                )
+              ],
             ),
           ),
-        ],
-      ),
-    );
-
-
-/*if (ShopCubit.isCategoryPressed && ShopCubit.categoryId == model.id)
-          ConditionalBuilder(
-            condition: state is ShopCateogriesProductsSuccessState,
-            builder: (context) => ListView.separated(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  ShopCubit.isCategoryPressed = false;
-                  return buildCategoryProductItem(
-                      context,
-                      ShopCubit.get(context)
-                          .categoryProductsModel
-                          .data
-                          .data[index]);
-                },
-                separatorBuilder: (context, index) => getDivider(context),
-                itemCount: ShopCubit.get(context)
-                    .categoryProductsModel
-                    .data
-                    .data
-                    .length),
-            fallback: (context) => Center(
-              child: CircularProgressIndicator(
-                color: defaultColor,
-              ),
-            ),
-          )*/
+        ),
+      ],
+    ),
+  );
+}

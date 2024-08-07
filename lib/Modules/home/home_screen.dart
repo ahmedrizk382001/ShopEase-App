@@ -1,4 +1,3 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +8,7 @@ import 'package:shop_app/Models/products_model.dart';
 import 'package:shop_app/Models/search_model.dart';
 import 'package:shop_app/Shared/Components/components.dart';
 import 'package:shop_app/Shared/Components/constants.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 // ignore: must_be_immutable
 class HomeScreen extends StatelessWidget {
@@ -96,19 +96,7 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(
                             height: 10,
                           ),
-                          CarouselSlider.builder(
-                              itemCount: homeCubit.bannersModel.data.length,
-                              itemBuilder: (context, index, realIndex) {
-                                return buildBannerItem(context,
-                                    homeCubit.bannersModel.data[index]);
-                              },
-                              options: CarouselOptions(
-                                viewportFraction: 1,
-                                autoPlay: true,
-                                autoPlayCurve: Curves.decelerate,
-                                autoPlayAnimationDuration:
-                                    const Duration(seconds: 1),
-                              )),
+                          BannerCarousel(),
                           const SizedBox(
                             height: 20,
                           ),
@@ -154,106 +142,165 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-Widget buildBannerItem(BuildContext context, BannersDataModel model) => Stack(
-      alignment: Alignment.center,
-      children: [
-        Image(
-            height: 200,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            image: NetworkImage(model.image)),
-      ],
-    );
-
-Widget buildProductItem(BuildContext context, ProductsDataModel model) =>
-    InkWell(
-      onTap: () {},
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: BorderDirectional(
-                  bottom: BorderSide(width: 1, color: defaultColor)),
-            ),
-            child: Stack(
-              alignment: Alignment.topLeft,
-              children: [
-                Image(
-                  image: NetworkImage(model.image),
-                  width: double.infinity,
-                  height: 180,
-                ),
-                if (model.discount != 0)
-                  Container(
-                    padding: const EdgeInsets.only(left: 10, right: 10),
-                    color: Colors.red,
-                    child: const Text(
-                      "Discount",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontSize: 13),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Text(
-            model.name,
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodyLarge!.color,
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "${model.price.round()} L.E",
-                style: TextStyle(
+Widget buildBannerItem(BuildContext context, BannersDataModel model) {
+  return Stack(
+    alignment: Alignment.center,
+    children: [
+      Image.network(
+        model.image,
+        height: 200,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) {
+            return child;
+          } else {
+            return SizedBox(
+              height: 200,
+              child: Center(
+                child: CircularProgressIndicator(
                   color: defaultColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          (loadingProgress.expectedTotalBytes ?? 1)
+                      : null,
                 ),
               ),
-              const SizedBox(
-                width: 5,
+            );
+          }
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return Center(
+            child: Icon(
+              Icons.error,
+              color: Colors.red,
+            ),
+          );
+        },
+      ),
+    ],
+  );
+}
+
+Widget buildProductItem(BuildContext context, ProductsDataModel model) {
+  return InkWell(
+    onTap: () {},
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: BorderDirectional(
+              bottom: BorderSide(width: 1, color: defaultColor),
+            ),
+          ),
+          child: Stack(
+            alignment: Alignment.topLeft,
+            children: [
+              Image.network(
+                model.image,
+                width: double.infinity,
+                height: 180,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  } else {
+                    return SizedBox(
+                      height: 180,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: defaultColor,
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  (loadingProgress.expectedTotalBytes ?? 1)
+                              : null,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Center(
+                    child: Icon(
+                      Icons.error,
+                      color: Colors.red,
+                    ),
+                  );
+                },
               ),
               if (model.discount != 0)
-                Text(
-                  "${model.oldPrice.round()} L.E",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 11,
-                    decoration: TextDecoration.lineThrough,
-                    decorationColor: defaultColor,
-                    decorationThickness: 2,
+                Container(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  color: Colors.red,
+                  child: const Text(
+                    "Discount",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white, fontSize: 13),
                   ),
                 ),
-              Spacer(),
-              IconButton(
-                  onPressed: () {
-                    ShopCubit.get(context).changeFavorites(model.id);
-                  },
-                  icon: model.inFavorites == true
-                      ? Icon(
-                          Icons.favorite,
-                          color: defaultColor,
-                        )
-                      : Icon(
-                          Icons.favorite_border,
-                          color: defaultColor,
-                        ))
             ],
-          )
-        ],
-      ),
-    );
+          ),
+        ),
+        Text(
+          model.name,
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge!.color,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "${model.price.round()} L.E",
+              style: TextStyle(
+                color: defaultColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(
+              width: 5,
+            ),
+            if (model.discount != 0)
+              Text(
+                "${model.oldPrice.round()} L.E",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11,
+                  decoration: TextDecoration.lineThrough,
+                  decorationColor: defaultColor,
+                  decorationThickness: 2,
+                ),
+              ),
+            Spacer(),
+            IconButton(
+              onPressed: () {
+                ShopCubit.get(context).changeFavorites(model.id);
+              },
+              icon: model.inFavorites == true
+                  ? Icon(
+                      Icons.favorite,
+                      color: defaultColor,
+                    )
+                  : Icon(
+                      Icons.favorite_border,
+                      color: defaultColor,
+                    ),
+            )
+          ],
+        )
+      ],
+    ),
+  );
+}
 
 Widget buildSearchItem(BuildContext context, SearchDataModel model) => InkWell(
       onTap: () {},
@@ -307,3 +354,45 @@ Widget buildSearchItem(BuildContext context, SearchDataModel model) => InkWell(
         ],
       ),
     );
+
+class BannerCarousel extends StatefulWidget {
+  @override
+  _BannerCarouselState createState() => _BannerCarouselState();
+}
+
+class _BannerCarouselState extends State<BannerCarousel> {
+  final PageController _pageController = PageController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 200.0, // Set the desired height here
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: ShopCubit.get(context).bannersModel.data.length,
+            itemBuilder: (context, index) {
+              return buildBannerItem(
+                  context, ShopCubit.get(context).bannersModel.data[index]);
+            },
+            scrollDirection: Axis.horizontal,
+            onPageChanged: (index) {
+              // Optionally handle page changes here
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: SmoothPageIndicator(
+            controller: _pageController,
+            count: ShopCubit.get(context).bannersModel.data.length,
+            effect: WormEffect(
+              activeDotColor: defaultColor,
+            ), // Customize this as needed
+          ),
+        ),
+      ],
+    );
+  }
+}
